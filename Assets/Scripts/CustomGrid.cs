@@ -27,9 +27,7 @@ namespace Assets.Scripts
 
             gridArray = new double[height, width];
 
-            GetValueList();
             CreateHeatMap(parentObject);
-
         }
 
         /// <summary>
@@ -63,7 +61,9 @@ namespace Assets.Scripts
 
         public void CreateHeatMap(GameObject parentObject)
         {
-            ColorHeatMap colorHeatMap = new ColorHeatMap();
+            GetValueList();
+
+            ColorHeatMap colorHeatMap = new ColorHeatMap(valueList.Min(), valueList.Max(),8);
 
             for (int x = 0; x < height; x++)
             {
@@ -83,7 +83,8 @@ namespace Assets.Scripts
                     
                     if(x == 0 && y != 0)
                     {
-                        CreateWorldText(data[y], cubeObject.transform, GetWorldPosition(x, y), 20, Color.white, TextAnchor.MiddleRight);
+                        Quaternion localRotation = Quaternion.Euler(0f, 0f, 0f);
+                        CreateWorldText(data[y], cubeObject.transform, GetWorldPosition(x, y), localRotation, (int)((cellSize / 2) * 10), Color.white, TextAnchor.MiddleRight);
                     }
                     else if (x != 0 && y != 0)
                     {
@@ -98,16 +99,15 @@ namespace Assets.Scripts
                         Vector3 worldPosition = GetWorldPosition(x, y, 1.01f);
                         SetValue(worldPosition, value);
                         Color color = colorHeatMap.GetColorForValue(value, valueList.Min(), valueList.Max());
-                        CreateCube(value.ToString("0.00"), cubeObject.transform, GetWorldPosition(x, y, 1.01f), new Vector3(cellSize, cellSize, 0.01f), 16, color);
+                        CreateCube(value.ToString("0.00"), color, cubeObject.transform, GetWorldPosition(x, y, 1.01f), new Vector3(cellSize, cellSize, 0.01f), (int)((cellSize /4)*10));
                     }
                     else
                     {
-                        CreateWorldText(data[y], cubeObject.transform, GetWorldPosition(x, y), 20, Color.white, TextAnchor.MiddleCenter);
+                        Quaternion localRotation = Quaternion.Euler(0f, 0f, 90f);
+                        CreateWorldText(data[y], cubeObject.transform, GetWorldPosition(x, y), localRotation, (int)((cellSize / 2) * 10), Color.white, TextAnchor.MiddleRight);
                     }
                 }
             }
-
-            Debug.Log("Map Created");
         }
 
         public float GetCellSize()
@@ -163,46 +163,49 @@ namespace Assets.Scripts
         }
 
         // Create Cube in the World
-        private GameObject CreateCube(string text, Transform parent = null, Vector3 localPosition = default(Vector3), Vector3 localScale = default(Vector3), int fontSize = 40, Color? color = null)
+        private GameObject CreateCube(string text, Color color, Transform parent = null, Vector3 localPosition = default(Vector3), Vector3 localScale = default(Vector3), int fontSize = 40)
         {
             if (color == null) color = Color.white;
-            return CreateCube(parent, text, localPosition, localScale, fontSize, (Color)color);
+            return CreateCube(parent, text, localPosition, localScale, fontSize, color);
         }
 
         // Create Cube in the World
         private GameObject CreateCube(Transform parent, string text, Vector3 localPosition, Vector3 localScale, int fontSize, Color color)
         {
             GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            gameObject.name = text;
             Transform transform = gameObject.transform;
             transform.SetParent(parent, false);
+            localPosition.z = localScale.z / 2;
             transform.localPosition = localPosition;
             transform.localScale = localScale;
-            gameObject.GetComponent<Renderer>().material.color = color;
+            Renderer rend = gameObject.GetComponent<Renderer>();
+            rend.material = new Material(Shader.Find("Standard"));
 
-            CreateWorldText(text, parent.transform, localPosition, fontSize, Color.white, TextAnchor.MiddleCenter, TextAlignment.Left, 5000);
+            Quaternion localRotation = Quaternion.Euler(0f,0f,0f);
 
-            // var outline = gameObject.AddComponent<Outline>();
-            // outline.OutlineMode = Outline.Mode.OutlineAll;
-            //outline.OutlineColor = Color.white;
-            //outline.OutlineWidth = 1f;
-            // outline.enabled = true;
+           rend.material.color = color;
+
+            TextMesh textMesh = CreateWorldText(text, gameObject.transform, new Vector3(0f,0f,0.5f), localRotation, fontSize, Color.black, TextAnchor.MiddleCenter, TextAlignment.Left, 5000);
+            textMesh.transform.localScale = new Vector3(0.2f,0.2f,1f);
             return gameObject;
         }
 
         // Create Text in the World+
-        private TextMesh CreateWorldText(string text, Transform parent = null, Vector3 localPosition = default(Vector3), int fontSize = 40, Color? color = null, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left, int sortingOrder = 5000)
+        private TextMesh CreateWorldText(string text, Transform parent = null, Vector3 localPosition = default(Vector3),Quaternion localRotation = default(Quaternion), int fontSize = 40, Color? color = null, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left, int sortingOrder = 5000)
         {
             if (color == null) color = Color.white;
-            return CreateWorldText(parent, text, localPosition, fontSize, (Color)color, textAnchor, textAlignment, sortingOrder);
+            return CreateWorldText(parent, text, localPosition,localRotation, fontSize, (Color)color, textAnchor, textAlignment, sortingOrder);
         }
 
         // Create Text in the World
-        private TextMesh CreateWorldText(Transform parent, string text, Vector3 localPosition, int fontSize, Color color, TextAnchor textAnchor, TextAlignment textAlignment, int sortingOrder)
+        private TextMesh CreateWorldText(Transform parent, string text, Vector3 localPosition,Quaternion localRotation,int fontSize, Color color, TextAnchor textAnchor, TextAlignment textAlignment, int sortingOrder)
         {
-            GameObject gameObject = new GameObject("World_Text", typeof(TextMesh));
+            GameObject gameObject = new GameObject(text, typeof(TextMesh));
             Transform transform = gameObject.transform;
             transform.SetParent(parent, false);
             transform.localPosition = localPosition;
+            transform.localRotation = localRotation;
             TextMesh textMesh = gameObject.GetComponent<TextMesh>();
             textMesh.anchor = textAnchor;
             textMesh.alignment = textAlignment;
@@ -210,6 +213,7 @@ namespace Assets.Scripts
             textMesh.fontSize = fontSize;
             textMesh.color = color;
             textMesh.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;
+
             return textMesh;
         }
     }

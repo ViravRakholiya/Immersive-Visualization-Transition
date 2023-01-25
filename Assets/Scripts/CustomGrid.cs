@@ -77,14 +77,14 @@ namespace Assets.Scripts
                         continue;
                     }
 
-                    GameObject cubeObject = new GameObject("Cube" + x + y);
-                    cubeObject.transform.SetParent(parentObject.transform, false);
+                    GameObject cubeParentObject = new GameObject("Parent" + x + y);
+                    cubeParentObject.transform.SetParent(parentObject.transform, false);
 
-                    
-                    if(x == 0 && y != 0)
+
+                    if (x == 0 && y != 0)
                     {
                         Quaternion localRotation = Quaternion.Euler(0f, 0f, 0f);
-                        CreateWorldText(data[y], cubeObject.transform, GetWorldPosition(x, y), localRotation, (int)((cellSize / 2) * 10), Color.white, TextAnchor.MiddleRight);
+                        CreateWorldText(data[y], cubeParentObject.transform, GetWorldPosition(x, y), localRotation, (int)((cellSize / 2) * 10), Color.white, TextAnchor.MiddleRight);
                     }
                     else if (x != 0 && y != 0)
                     {
@@ -96,15 +96,25 @@ namespace Assets.Scripts
                             value = 0f;
                         }
 
+                        cubeParentObject.tag = "customGrid";
+                        cubeParentObject.AddComponent(typeof(HeatMapBehavior));
+                        cubeParentObject.AddComponent(typeof(BoxCollider));
+
+                        GameObject cubeObject = new GameObject("Child" + x + y);
+                        cubeObject.transform.SetParent(cubeParentObject.transform, false);
+
                         Vector3 worldPosition = GetWorldPosition(x, y, 1.01f);
                         SetValue(worldPosition, value);
                         Color color = colorHeatMap.GetColorForValue(value, valueList.Min(), valueList.Max());
                         CreateCube(value.ToString("0.00"), color, cubeObject.transform, GetWorldPosition(x, y, 1.01f), new Vector3(cellSize, cellSize, 0.01f), (int)((cellSize /4)*10));
+
+                        HeatMapBehavior heatMapBehaviorObj = cubeParentObject.GetComponent<HeatMapBehavior>();
+                        heatMapBehaviorObj.particularCubeTransform = cubeObject.transform;
                     }
                     else
                     {
                         Quaternion localRotation = Quaternion.Euler(0f, 0f, 90f);
-                        CreateWorldText(data[y], cubeObject.transform, GetWorldPosition(x, y), localRotation, (int)((cellSize / 2) * 10), Color.white, TextAnchor.MiddleRight);
+                        CreateWorldText(data[y], cubeParentObject.transform, GetWorldPosition(x, y), localRotation, (int)((cellSize / 2) * 10), Color.white, TextAnchor.MiddleRight);
                     }
                 }
             }
@@ -173,7 +183,7 @@ namespace Assets.Scripts
         private GameObject CreateCube(Transform parent, string text, Vector3 localPosition, Vector3 localScale, int fontSize, Color color)
         {
             GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            gameObject.name = text;
+            gameObject.name = "Cube" + text;
             Transform transform = gameObject.transform;
             transform.SetParent(parent, false);
             localPosition.z = localScale.z / 2;
@@ -181,6 +191,7 @@ namespace Assets.Scripts
             transform.localScale = localScale;
             Renderer rend = gameObject.GetComponent<Renderer>();
             rend.material = new Material(Shader.Find("Standard"));
+            rend.receiveShadows = false;
 
             Quaternion localRotation = Quaternion.Euler(0f,0f,0f);
 
@@ -201,7 +212,7 @@ namespace Assets.Scripts
         // Create Text in the World
         private TextMesh CreateWorldText(Transform parent, string text, Vector3 localPosition,Quaternion localRotation,int fontSize, Color color, TextAnchor textAnchor, TextAlignment textAlignment, int sortingOrder)
         {
-            GameObject gameObject = new GameObject(text, typeof(TextMesh));
+            GameObject gameObject = new GameObject("Value" +text, typeof(TextMesh));
             Transform transform = gameObject.transform;
             transform.SetParent(parent, false);
             transform.localPosition = localPosition;

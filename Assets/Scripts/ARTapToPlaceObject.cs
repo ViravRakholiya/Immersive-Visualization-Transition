@@ -93,7 +93,7 @@ public class ARTapToPlaceObject : MonoBehaviour
                 placementPose.rotation = Quaternion.LookRotation(cameraBearing);
             }
         }
-        Debug.Log("Position" + placementPose.position);
-        Debug.Log("Rotation" + placementPose.rotation);
+      //  Debug.Log("Position" + placementPose.position);
+       // Debug.Log("Rotation" + placementPose.rotation);
     }
 }

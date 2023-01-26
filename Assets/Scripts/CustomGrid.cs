@@ -10,23 +10,22 @@ namespace Assets.Scripts
     {
         private int width;
         private int height;
-        private float cellSize;
         string[] dataList;
-        private double[,] gridArray;
         private List<double> valueList;
 
         private char fieldSeperator = ',';
 
-        public CustomGrid(GameObject parentObject,float cellSize, string[] dataList)
+        private Material material;
+        public CustomGrid(GameObject parentObject,float m_cellSize, string[] dataList)
         {
-            this.cellSize = cellSize;
+            GridArray.cellSize = m_cellSize;
             this.dataList = dataList;
 
             width = dataList[0].Split(fieldSeperator).Length; // Number of coloumn in csv file
             height = dataList.Length; // Number of row in csv files
 
-            gridArray = new double[height, width];
-
+            GridArray.gridArrayList = new double[height, width];
+            material = Resources.Load<Material>("CubeColor");
             CreateHeatMap(parentObject);
         }
 
@@ -80,11 +79,14 @@ namespace Assets.Scripts
                     GameObject cubeParentObject = new GameObject("Parent" + x + y);
                     cubeParentObject.transform.SetParent(parentObject.transform, false);
 
+                    GameObject cubeObject = new GameObject("Child" + x + y);
+                    cubeObject.transform.SetParent(cubeParentObject.transform, false);
+
+                    Vector3 textPos = new Vector3(0f, 0f, 0.5f);
 
                     if (x == 0 && y != 0)
                     {
-                        Quaternion localRotation = Quaternion.Euler(0f, 0f, 0f);
-                        CreateWorldText(data[y], cubeParentObject.transform, GetWorldPosition(x, y), localRotation, (int)((cellSize / 2) * 10), Color.white, TextAnchor.MiddleRight);
+                       CreateCubeWithText(data[y], new Color(1f, 1f, 1f, 0f), Color.white, cubeObject.transform, GetWorldPosition(x, y), textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, 0.01f), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 0f), 20, TextAnchor.MiddleRight);
                     }
                     else if (x != 0 && y != 0)
                     {
@@ -100,30 +102,23 @@ namespace Assets.Scripts
                         cubeParentObject.AddComponent(typeof(HeatMapBehavior));
                         cubeParentObject.AddComponent(typeof(BoxCollider));
 
-                        GameObject cubeObject = new GameObject("Child" + x + y);
-                        cubeObject.transform.SetParent(cubeParentObject.transform, false);
-
                         Vector3 worldPosition = GetWorldPosition(x, y, 1.01f);
-                        SetValue(worldPosition, value);
-                        Color color = colorHeatMap.GetColorForValue(value, valueList.Min(), valueList.Max());
-                        CreateCube(value.ToString("0.00"), color, cubeObject.transform, GetWorldPosition(x, y, 1.01f), new Vector3(cellSize, cellSize, 0.01f), (int)((cellSize /4)*10));
+                        SetValue(worldPosition, value); ;
+                        Color cubeColor = colorHeatMap.GetColorForValue(value, valueList.Min(), valueList.Max());
+
+                        CreateCubeWithText(value.ToString("0.00"), cubeColor, Color.black, cubeObject.transform, worldPosition, textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, 0.01f), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 00f), 20, TextAnchor.MiddleCenter, TextAlignment.Left);
 
                         HeatMapBehavior heatMapBehaviorObj = cubeParentObject.GetComponent<HeatMapBehavior>();
                         heatMapBehaviorObj.particularCubeTransform = cubeObject.transform;
                     }
                     else
                     {
-                        Quaternion localRotation = Quaternion.Euler(0f, 0f, 90f);
-                        CreateWorldText(data[y], cubeParentObject.transform, GetWorldPosition(x, y), localRotation, (int)((cellSize / 2) * 10), Color.white, TextAnchor.MiddleRight);
+                       CreateCubeWithText(data[y], new Color(1f,1f,1f,0f), Color.white, cubeObject.transform, GetWorldPosition(x, y), textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, 0.01f), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 90f),20,TextAnchor.MiddleRight);
                     }
                 }
             }
         }
 
-        public float GetCellSize()
-        {
-            return cellSize;
-        }
 
         /// <summary>
         /// Method to set value of cell
@@ -133,7 +128,7 @@ namespace Assets.Scripts
         /// <param name="value">value from the dataset</param>
         public void SetValue(int x, int y, double value)
         {
-            gridArray[x, y] = value;
+            GridArray.gridArrayList[x, y] = value;
         }
 
         public void SetValue(Vector3 worldPosition, double value, float gridspace = 1)
@@ -149,80 +144,86 @@ namespace Assets.Scripts
         /// <param name="x">x cordinates of the position</param>
         /// <param name="y">y cordinates of the position</param>
         /// <returns>Return the value of current position</returns>
-        public double GetValue(int x, int y)
+        public static double GetValue(int x, int y)
         {
-            return gridArray[x, y];
+            return GridArray.gridArrayList[x, y];
         }
 
-        public double GetValue(Vector3 worldPosition, float gridspace = 1)
+        public static double GetValue(Vector3 worldPosition, float gridspace = 1)
         {
             int x, y;
             GetXY(worldPosition, out x, out y, gridspace);
             return GetValue(x, y);
         }
 
-        private void GetXY(Vector3 worldPosition, out int x, out int y, float gridspace = 1)
+        private static void GetXY(Vector3 worldPosition, out int x, out int y, float gridspace = 1)
         {
-            x = Mathf.FloorToInt((worldPosition).x  / (cellSize * gridspace));
-            y = Mathf.FloorToInt((worldPosition).y / (cellSize * gridspace));
+            x = Mathf.FloorToInt((worldPosition).x  / (GridArray.cellSize * gridspace));
+            y = Mathf.FloorToInt((worldPosition).y / (GridArray.cellSize * gridspace));
         }
 
         private Vector3 GetWorldPosition(int x, int y, float gridspace = 1)
         {
-            return new Vector3(x * gridspace, y * gridspace) * cellSize;
+            return new Vector3(x * gridspace, y * gridspace) * GridArray.cellSize;
         }
 
-        // Create Cube in the World
-        private GameObject CreateCube(string text, Color color, Transform parent = null, Vector3 localPosition = default(Vector3), Vector3 localScale = default(Vector3), int fontSize = 40)
-        {
-            if (color == null) color = Color.white;
-            return CreateCube(parent, text, localPosition, localScale, fontSize, color);
-        }
-
-        // Create Cube in the World
-        private GameObject CreateCube(Transform parent, string text, Vector3 localPosition, Vector3 localScale, int fontSize, Color color)
+        // Create Cube with text in the World
+        private GameObject CreateCubeWithText(string text, Color Cubecolor,Color fontColor, Transform parent = null, Vector3 cubePosition = default(Vector3), Vector3 textPosition = default(Vector3),Vector3 CubeScale = default(Vector3), Vector3 textScale = default(Vector3), Quaternion textRotation = default(Quaternion), int fontSize = 20, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left)
         {
             GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            gameObject.name = "Cube" + text;
+            gameObject.name = "Cube"+text;
             Transform transform = gameObject.transform;
             transform.SetParent(parent, false);
-            localPosition.z = localScale.z / 2;
-            transform.localPosition = localPosition;
-            transform.localScale = localScale;
-            Renderer rend = gameObject.GetComponent<Renderer>();
-            rend.material = new Material(Shader.Find("Standard"));
+            cubePosition.z = CubeScale.z / 2;
+            transform.localPosition = cubePosition;
+            transform.localScale = CubeScale;
+            MeshRenderer rend = gameObject.GetComponent<MeshRenderer>();
+            rend.material = material;
             rend.receiveShadows = false;
+            rend.material.color = Cubecolor;
 
-            Quaternion localRotation = Quaternion.Euler(0f,0f,0f);
+            if (Cubecolor.a == 0f)
+            {
+               /* rend.material.SetOverrideTag("RenderType", "Transparent");
+                rend.material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                rend.material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                rend.material.SetInt("_ZWrite", 0);
+                rend.material.DisableKeyword("_ALPHATEST_ON");
+                rend.material.EnableKeyword("_ALPHABLEND_ON");
+                rend.material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                rend.material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;*/
+            }
 
-           rend.material.color = color;
 
-            TextMesh textMesh = CreateWorldText(text, gameObject.transform, new Vector3(0f,0f,0.5f), localRotation, fontSize, Color.black, TextAnchor.MiddleCenter, TextAlignment.Left, 5000);
-            textMesh.transform.localScale = new Vector3(0.2f,0.2f,1f);
+            // rend.material.color = Cubecolor;
+            //  rend.material.SetColor("_Color", Cubecolor);
+
+
+            if (Cubecolor.a == 0f)
+            {
+                gameObject.GetComponent<MeshRenderer>().enabled = false;
+            }
+            
+            CreateWorldText(text, fontColor, gameObject.transform, textPosition, textRotation, textScale, fontSize, textAnchor, textAlignment);
+
             return gameObject;
         }
 
-        // Create Text in the World+
-        private TextMesh CreateWorldText(string text, Transform parent = null, Vector3 localPosition = default(Vector3),Quaternion localRotation = default(Quaternion), int fontSize = 40, Color? color = null, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left, int sortingOrder = 5000)
-        {
-            if (color == null) color = Color.white;
-            return CreateWorldText(parent, text, localPosition,localRotation, fontSize, (Color)color, textAnchor, textAlignment, sortingOrder);
-        }
-
         // Create Text in the World
-        private TextMesh CreateWorldText(Transform parent, string text, Vector3 localPosition,Quaternion localRotation,int fontSize, Color color, TextAnchor textAnchor, TextAlignment textAlignment, int sortingOrder)
+        private TextMesh CreateWorldText(string text, Color fontColor, Transform parent = null, Vector3 localPosition = default(Vector3), Quaternion localRotation = default(Quaternion), Vector3 textScale = default(Vector3),int fontSize = 20, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left, int sortingOrder = 5000)
         {
             GameObject gameObject = new GameObject("Value" +text, typeof(TextMesh));
             Transform transform = gameObject.transform;
             transform.SetParent(parent, false);
             transform.localPosition = localPosition;
             transform.localRotation = localRotation;
+            transform.localScale = textScale;
             TextMesh textMesh = gameObject.GetComponent<TextMesh>();
             textMesh.anchor = textAnchor;
             textMesh.alignment = textAlignment;
             textMesh.text = text;
             textMesh.fontSize = fontSize;
-            textMesh.color = color;
+            textMesh.color = fontColor;
             textMesh.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;
 
             return textMesh;

@@ -53,17 +53,19 @@ public class ColorHeatMap
      {
          Color heatMapColor = new Color();
          var value = (val - minVal) / (maxVal - minVal);
+
+         if(val >= maxVal)
+         {
+            heatMapColor = GetColorFromTwoFixedColors(value, ColorsOfMap[0], ColorsOfMap[ColorsOfMap.Count - 1]);
+            return heatMapColor;
+         }
+
          for (int i = 0; i < noOfFraction; i++)
          {
              if(val <= fractionValueList[i])
              {
                  heatMapColor = GetColorFromTwoFixedColors(value, ColorsOfMap[i], ColorsOfMap[i+1]);
                  break;
-             }
-
-             if (i == noOfFraction-1 && val > maxVal) 
-             {
-                 heatMapColor = GetColorFromTwoFixedColors(value, ColorsOfMap[i], ColorsOfMap[i + 1]);
              }
          }
 
@@ -81,12 +83,6 @@ public class ColorHeatMap
     }
     private Color GetColorFromTwoFixedColors(double value,Color minColor,Color maxColor)
     {
-        /*double colorPerc = 1d / (ColorsOfMap.Count - 1);// % of each block of color. the last is the "100% Color"
-        double blockOfColor = value / colorPerc;// the integer part repersents how many block to skip
-        int blockIdx = (int)Math.Truncate(blockOfColor);// Idx of 
-        double valPercResidual = value - (blockIdx * colorPerc);//remove the part represented of block 
-        double percOfColor = valPercResidual / colorPerc;// % of color of this block that will be filled */
-
         var R = (maxColor.r - minColor.r) * value + minColor.r;      // Evaluated as -255*value + 255.
         var G = (maxColor.g - minColor.g) * value + minColor.g;      // Evaluates as 0.
         var B = (maxColor.b - minColor.b) * value + minColor.b;      // Evaluates as 255*value + 0.

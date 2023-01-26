@@ -23,13 +23,12 @@ public class GazeInteraction : MonoBehaviour
         {
             GameObject gameObject = hit.collider.gameObject;
             GameObject parentObj = gameObject.transform.parent.gameObject;
-            GameObject childObj = parentObj.transform.parent.gameObject;
-            Debug.Log("Parent Object Name: "+parentObj.name);
-            float value = float.Parse(gameObject.name.Remove(0, 4));
-
-            if (childObj.CompareTag("customGrid"))
+            GameObject customGridObj = parentObj.transform.parent.gameObject;
+            
+            float value = (float) CustomGrid.GetValue(gameObject.transform.localPosition,1.01f);
+            if (customGridObj.CompareTag("customGrid"))
             {
-                ScaleCube(childObj.GetComponent<HeatMapBehavior>(),value);
+                ScaleCube(customGridObj.GetComponent<HeatMapBehavior>(),value);
             }
         }
     }
@@ -44,7 +43,7 @@ public class GazeInteraction : MonoBehaviour
             }
             else
             {
-                heatMapBehavior.UnScaleChart(desiredScale);
+                heatMapBehavior.UnScaleChart();
             }
         }
     }

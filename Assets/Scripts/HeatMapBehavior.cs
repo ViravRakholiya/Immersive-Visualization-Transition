@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -23,7 +21,7 @@ namespace Assets.Scripts
             desiredScale = new Vector3(particularCubeTransform.localScale.x, particularCubeTransform.localScale.y,-scaleVal);
         }
 
-        public void UnScaleChart(float scaleVal)
+        public void UnScaleChart()
         {
             desiredScale = Vector3.one;
         }

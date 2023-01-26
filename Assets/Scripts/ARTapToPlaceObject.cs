@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using System;
-using UnityEngine.XR.ARSubsystems;
 using Assets.Scripts;
 
 [RequireComponent(typeof(ARRaycastManager))]
@@ -22,7 +21,6 @@ public class ARTapToPlaceObject : MonoBehaviour
 
     public GameObject objectToPlace;
     GameObject spawnedObject;
-    //private ARRaycastManager arOrigin;
     private Pose placementPose;
     private bool placementPoseIsValid = false;
 
@@ -51,12 +49,9 @@ public class ARTapToPlaceObject : MonoBehaviour
 
          RaycastHit raycastHit;
          Ray ray = cam.ScreenPointToRay(Input.GetTouch(0).position);
-         Debug.Log("Before Touch Position");
 
         if(Input.GetTouch(0).phase == TouchPhase.Began && spawnedObject == null)
         {
-            Debug.LogWarning("Touch Position : " + placementPose.position);
-
             if (Physics.Raycast(ray,out raycastHit))
             {
                 if (raycastHit.collider.gameObject.tag == "heatMap")
@@ -65,13 +60,11 @@ public class ARTapToPlaceObject : MonoBehaviour
                 }
                 else
                 {
-                    //objectToPlace.SetActive(true);
                     spawnedObject = objectToPlace;
                     spawnedObject.transform.position = placementPose.position;
-                    spawnedObject.SetActive(true); 
+                    spawnedObject.SetActive(true);
+                    placementIndicator.SetActive(false);
                     Debug.LogWarning("After Touch Object Position : " + spawnedObject.transform.position);
-
-                    //spawnedObject = Instantiate(objectToPlace, m_Hits[0].pose.position, Quaternion.identity);
                 }
             }
         }
@@ -84,27 +77,7 @@ public class ARTapToPlaceObject : MonoBehaviour
         {
             spawnedObject = null;
         }
-         
 
-         /*Debug.LogWarning("Before Touch Position" + placementPose.position);
-         if ((placementPoseIsValid && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began) || (placementPoseIsValid && Input.GetMouseButton(0)))
-         {
-             Debug.LogWarning("Touch Position" + placementPose.position);
-             PlaceObject();
-             objectToPlace.SetActive(true);
-             Debug.LogWarning("After Touch Object Position : " + objectToPlace.transform.position);
-        }
-         Debug.LogWarning("After Touch Position" + placementPose.position);*/
-
-    }
-
-    private void PlaceObject()
-    {
-        Debug.LogWarning("Position" + placementPose.position);
-        Debug.LogWarning("Rotation" + placementPose.rotation);
-        objectToPlace.transform.position = placementPose.position;
-        Debug.LogWarning("objectToPlace Position" + objectToPlace.transform.position);
-        Debug.LogWarning("objectToPlace Rotation" + objectToPlace.transform.rotation);
     }
 
     private void UpdatePlacementIndicator()
@@ -123,10 +96,6 @@ public class ARTapToPlaceObject : MonoBehaviour
     private void UpdatePlacementPose()
     {
         Debug.Log("1 Position" + placementPose.position);
-        // Vector3 screenCenter = Camera.main.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
-        // arOrigin = FindObjectOfType<ARRaycastManager>();
-        //Ray ray = camera.ScreenPointToRay(Input.GetTouch(0).position);
-        //arOrigin.Raycast(screenCenter, hits, TrackableType.Planes);
         arOrigin.Raycast(Input.GetTouch(0).position, hits);
 
         placementPoseIsValid = hits.Count > 0;

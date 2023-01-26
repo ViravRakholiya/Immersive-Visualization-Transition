@@ -31,6 +31,18 @@ public class GazeInteraction : MonoBehaviour
                 ScaleCube(customGridObj.GetComponent<HeatMapBehavior>(),value);
             }
         }
+        else
+        {
+            UnScaleAll();
+        }
+    }
+
+    private void UnScaleAll()
+    {
+        foreach (HeatMapBehavior heatMap in heatMapBehaviors)
+        {
+            heatMap.UnScaleChart();
+        }
     }
 
     void ScaleCube(HeatMapBehavior desiredHeatmap,float desiredScale)

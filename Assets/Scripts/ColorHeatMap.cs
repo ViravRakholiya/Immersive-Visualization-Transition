@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class ColorHeatMap
@@ -22,6 +21,8 @@ public class ColorHeatMap
     {
         this.minVal = minVal;
         this.maxVal = maxVal;
+        Debug.Log("Max Value" + maxVal);
+        Debug.Log("minVal Value" + minVal);
         this.noOfFraction = noOfFraction;
         fractionValueList = new List<double>();
 
@@ -78,7 +79,12 @@ public class ColorHeatMap
         fractionValueList.Add(minVal);
         for (int i = 1; i < noOfFraction; i++)
         {
-                fractionValueList.Add(fractionValueList[i-1] + fractionPoint);
+            fractionValueList.Add(fractionValueList[i - 1] + fractionPoint);
+        }
+
+        if(fractionValueList[noOfFraction-1] < maxVal)
+        {
+            fractionValueList[noOfFraction - 1] = maxVal;
         }
     }
     private Color GetColorFromTwoFixedColors(double value,Color minColor,Color maxColor)

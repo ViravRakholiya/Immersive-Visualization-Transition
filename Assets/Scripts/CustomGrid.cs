@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -86,7 +84,7 @@ namespace Assets.Scripts
 
                     if (x == 0 && y != 0)
                     {
-                       CreateCubeWithText(data[y], new Color(1f, 1f, 1f, 0f), Color.white, cubeObject.transform, GetWorldPosition(x, y), textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, 0.01f), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 0f), 20, TextAnchor.MiddleRight);
+                       CreateCubeWithText(data[y], new Color(1f, 1f, 1f, 0f), Color.white, cubeObject.transform, GetWorldPosition(x, y), textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, 0.01f), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 0f), true, 20, TextAnchor.MiddleRight);
                     }
                     else if (x != 0 && y != 0)
                     {
@@ -105,15 +103,15 @@ namespace Assets.Scripts
                         Vector3 worldPosition = GetWorldPosition(x, y, 1.01f);
                         SetValue(worldPosition, value); ;
                         Color cubeColor = colorHeatMap.GetColorForValue(value, valueList.Min(), valueList.Max());
-
-                        CreateCubeWithText(value.ToString("0.00"), cubeColor, Color.black, cubeObject.transform, worldPosition, textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, 0.01f), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 00f), 20, TextAnchor.MiddleCenter, TextAlignment.Left);
+                        Debug.Log(cubeObject.name + cubeColor);
+                        CreateCubeWithText(value.ToString("0.00"), cubeColor, Color.black, cubeObject.transform, worldPosition, textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, 0.01f), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 00f),false, 20, TextAnchor.MiddleCenter, TextAlignment.Left);
 
                         HeatMapBehavior heatMapBehaviorObj = cubeParentObject.GetComponent<HeatMapBehavior>();
                         heatMapBehaviorObj.particularCubeTransform = cubeObject.transform;
                     }
                     else
                     {
-                       CreateCubeWithText(data[y], new Color(1f,1f,1f,0f), Color.white, cubeObject.transform, GetWorldPosition(x, y), textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, 0.01f), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 90f),20,TextAnchor.MiddleRight);
+                       CreateCubeWithText(data[y], new Color(1f,1f,1f,0f), Color.white, cubeObject.transform, GetWorldPosition(x, y), textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, 0.01f), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 90f), true,20, TextAnchor.MiddleRight);
                     }
                 }
             }
@@ -168,7 +166,7 @@ namespace Assets.Scripts
         }
 
         // Create Cube with text in the World
-        private GameObject CreateCubeWithText(string text, Color Cubecolor,Color fontColor, Transform parent = null, Vector3 cubePosition = default(Vector3), Vector3 textPosition = default(Vector3),Vector3 CubeScale = default(Vector3), Vector3 textScale = default(Vector3), Quaternion textRotation = default(Quaternion), int fontSize = 20, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left)
+        private GameObject CreateCubeWithText(string text, Color Cubecolor,Color fontColor, Transform parent = null, Vector3 cubePosition = default(Vector3), Vector3 textPosition = default(Vector3),Vector3 CubeScale = default(Vector3), Vector3 textScale = default(Vector3), Quaternion textRotation = default(Quaternion), bool isOnlyText = false, int fontSize = 20, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left)
         {
             GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
             gameObject.name = "Cube"+text;
@@ -182,24 +180,7 @@ namespace Assets.Scripts
             rend.receiveShadows = false;
             rend.material.color = Cubecolor;
 
-            if (Cubecolor.a == 0f)
-            {
-               /* rend.material.SetOverrideTag("RenderType", "Transparent");
-                rend.material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                rend.material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                rend.material.SetInt("_ZWrite", 0);
-                rend.material.DisableKeyword("_ALPHATEST_ON");
-                rend.material.EnableKeyword("_ALPHABLEND_ON");
-                rend.material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                rend.material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;*/
-            }
-
-
-            // rend.material.color = Cubecolor;
-            //  rend.material.SetColor("_Color", Cubecolor);
-
-
-            if (Cubecolor.a == 0f)
+            if (isOnlyText)
             {
                 gameObject.GetComponent<MeshRenderer>().enabled = false;
             }

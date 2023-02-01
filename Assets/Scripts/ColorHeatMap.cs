@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ColorHeatMap
@@ -21,8 +22,6 @@ public class ColorHeatMap
     {
         this.minVal = minVal;
         this.maxVal = maxVal;
-        Debug.Log("Max Value" + maxVal);
-        Debug.Log("minVal Value" + minVal);
         this.noOfFraction = noOfFraction;
         fractionValueList = new List<double>();
 
@@ -37,27 +36,45 @@ public class ColorHeatMap
     }
     private void initColorsBlocks()
     {
-        ColorsOfMap.AddRange(new Color[]{
-            new Color(0, 71, 109),
-            new Color(21, 85, 126) ,
-            new Color(37, 100, 143) ,
-            new Color(51, 114, 161) ,
-            new Color(65, 130, 179) ,
-            new Color(78, 145, 198) ,
-            new Color(92, 161, 217) ,
-            new Color(105, 177, 236), 
-            new Color(119, 194, 255)
-        });
-     }
+          ColorsOfMap.AddRange(new Color[]{
+              new Color(0, 71, 109),
+              new Color(21, 85, 126) ,
+              new Color(37, 100, 143) ,
+              new Color(51, 114, 161) ,
+              new Color(65, 130, 179) ,
+              new Color(78, 145, 198) ,
+              new Color(92, 161, 217) ,
+              new Color(105, 177, 236), 
+              new Color(119, 194, 255)
+          });
 
-     public Color GetColorForValue(double val, double minVal, double maxVal)
+        /*ColorsOfMap.AddRange(new Color[]{
+            new Color(0,63,92),
+            new Color(47,75,124) ,
+            new Color(102,81,145) ,
+            new Color(160,81,149) ,
+            new Color(212,80,135) ,
+            new Color(249,93,106) ,
+            new Color(255,124,67) ,
+            new Color(255,166,0),
+            new Color(255,208,0)
+        });*/
+    }
+
+    public Color GetColorForValue(double val, double minVal, double maxVal)
      {
          Color heatMapColor = new Color();
-         var value = (val - minVal) / (maxVal - minVal);
 
-         if(val >= maxVal)
+        double valPerc = (val - minVal) / (maxVal - minVal);// value%
+        double colorPerc = 1d / (ColorsOfMap.Count);// % of each block of color. the last is the "100% Color"
+        double blockOfColor = valPerc / colorPerc;// the integer part repersents how many block to skip
+        int blockIdx = (int)Math.Truncate(blockOfColor);// Idx of 
+        double valPercResidual = valPerc - (blockIdx * colorPerc);//remove the part represented of block 
+        double percOfColor = valPercResidual / colorPerc;// % of color of this block that will be filled
+
+        if (val >= maxVal)
          {
-            heatMapColor = GetColorFromTwoFixedColors(value, ColorsOfMap[0], ColorsOfMap[ColorsOfMap.Count - 1]);
+            heatMapColor = GetColorFromTwoFixedColors(percOfColor, ColorsOfMap[0], ColorsOfMap[ColorsOfMap.Count - 1]);
             return heatMapColor;
          }
 
@@ -65,7 +82,7 @@ public class ColorHeatMap
          {
              if(val <= fractionValueList[i])
              {
-                 heatMapColor = GetColorFromTwoFixedColors(value, ColorsOfMap[i], ColorsOfMap[i+1]);
+                 heatMapColor = GetColorFromTwoFixedColors(percOfColor, ColorsOfMap[i], ColorsOfMap[i+1]);
                  break;
              }
          }

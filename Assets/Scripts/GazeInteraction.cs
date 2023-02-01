@@ -2,60 +2,86 @@ using Assets.Scripts;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR.ARFoundation;
 
 public class GazeInteraction : MonoBehaviour
 {
-    List<HeatMapBehavior> heatMapBehaviors = new List<HeatMapBehavior>();
+    List<GameObject> gameObjList = new List<GameObject>();
+    IDictionary<GameObject, Color> visitedGrid = new Dictionary<GameObject, Color>();
+    [SerializeField]
+    private ARSessionOrigin aRSessionOrigin;
+
+    private LineRenderer lineRenderer;
 
     void Start()
     {
-        heatMapBehaviors = FindObjectsOfType<HeatMapBehavior>().ToList();
+        gameObjList = GameObject.FindGameObjectsWithTag(GridArray.cubeTag).ToList();
+        lineRenderer = aRSessionOrigin.GetComponent<LineRenderer>();
     }
 
     void Update()
     {
-        if(heatMapBehaviors.Count == 0)
+        if (gameObjList.Count == 0)
         {
-            heatMapBehaviors = FindObjectsOfType<HeatMapBehavior>().ToList();
+            gameObjList = GameObject.FindGameObjectsWithTag(GridArray.cubeTag).ToList();
         }
 
-        if (Physics.Raycast(transform.position,transform.forward,out RaycastHit hit))
+        Ray ray = new Ray(transform.position, transform.forward);
+        if (Physics.Raycast(ray,out RaycastHit hit,20f))
         {
+            Debug.DrawRay(ray.origin, hit.point);
             GameObject gameObject = hit.collider.gameObject;
-            GameObject parentObj = gameObject.transform.parent.gameObject;
-            GameObject customGridObj = parentObj.transform.parent.gameObject;
             
-            float value = (float) CustomGrid.GetValue(gameObject.transform.localPosition,1.01f);
-            if (customGridObj.CompareTag("customGrid"))
+            if (gameObject.CompareTag("customGrid"))
             {
-                ScaleCube(customGridObj.GetComponent<HeatMapBehavior>(),value);
+                lineRenderer.enabled = true;
+                lineRenderer.SetPosition(0, ray.origin);
+                lineRenderer.SetPosition(1, hit.point);
+                HighLightCube(gameObject);
             }
         }
         else
         {
-            UnScaleAll();
+            UnHeighLightAll();
         }
     }
 
-    private void UnScaleAll()
+    private void UnHeighLightAll()
     {
-        foreach (HeatMapBehavior heatMap in heatMapBehaviors)
+        foreach (GameObject gameObj in gameObjList)
         {
-            heatMap.UnScaleChart();
-        }
-    }
-
-    void ScaleCube(HeatMapBehavior desiredHeatmap,float desiredScale)
-    {
-        foreach (HeatMapBehavior heatMapBehavior in heatMapBehaviors)
-        {
-            if (heatMapBehavior == desiredHeatmap)
+            Material material = gameObj.GetComponent<MeshRenderer>().material;
+            if (visitedGrid.ContainsKey(gameObj))
             {
-                heatMapBehavior.ScaleChart(desiredScale);
+                material.color = visitedGrid[gameObj];
+            }
+        }
+    }
+
+    void HighLightCube(GameObject desiredHeatmap)
+    {
+        foreach (GameObject gameObj in gameObjList)
+        {
+            Material material = gameObj.GetComponent<MeshRenderer>().material;
+            Color originalColor = material.color;
+            if (gameObj == desiredHeatmap)
+            {
+                material.color = Color.red;
+                if (!visitedGrid.ContainsKey(gameObj))
+                {
+                    visitedGrid.Add(gameObj, originalColor);
+                }
             }
             else
             {
-                heatMapBehavior.UnScaleChart();
+                if (visitedGrid.ContainsKey(gameObj))
+                {
+                    material.color = visitedGrid[gameObj];
+                }
+                else
+                {
+                    material.color = originalColor;
+                }
             }
         }
     }

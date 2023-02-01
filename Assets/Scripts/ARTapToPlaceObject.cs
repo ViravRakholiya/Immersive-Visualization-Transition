@@ -32,7 +32,7 @@ public class ARTapToPlaceObject : MonoBehaviour
         cam = Camera.main;
         spawnedObject = null;
         string[] dataList = csvFile.text.Split(lineSeperater, StringSplitOptions.RemoveEmptyEntries);
-        new CustomGrid(objectToPlace, gridSize, dataList);
+        new CustomGrid(objectToPlace, gridSize, dataList,0);
         objectToPlace.SetActive(false);
     }
 
@@ -63,8 +63,6 @@ public class ARTapToPlaceObject : MonoBehaviour
                     spawnedObject = objectToPlace;
                     spawnedObject.transform.position = placementPose.position;
                     spawnedObject.SetActive(true);
-                    placementIndicator.SetActive(false);
-                    Debug.LogWarning("After Touch Object Position : " + spawnedObject.transform.position);
                 }
             }
         }

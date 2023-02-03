@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -7,6 +6,6 @@ namespace Assets.Scripts
     public class InfoData : MonoBehaviour
     {
         [HideInInspector]
-        public List<string> infoDataDict;
+        public List<string> infoDataList;
     }
 }

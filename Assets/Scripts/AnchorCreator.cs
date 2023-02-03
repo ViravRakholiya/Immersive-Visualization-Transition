@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
@@ -13,15 +14,6 @@ public class AnchorCreator : MonoBehaviour
 {
     [SerializeField]
     private GameObject m_AnchorPrefab;
-
-    [SerializeField]
-    private TextAsset csvFile;
-
-    [SerializeField]
-    private float gridSize = 1f;
-
-    [SerializeField]
-    private int noOfColoumnOforAddInfo;
 
     private char lineSeperater = '\n';
 
@@ -42,8 +34,9 @@ public class AnchorCreator : MonoBehaviour
 
     void Start()
     {
-        string[] dataList = csvFile.text.Split(lineSeperater, StringSplitOptions.RemoveEmptyEntries);
-        new CustomGrid(m_AnchorPrefab, gridSize, dataList, noOfColoumnOforAddInfo);
+        StreamReader reader = new StreamReader(MapInfo.filePath);
+        string[] dataList = reader.ReadToEnd().Split(lineSeperater, StringSplitOptions.RemoveEmptyEntries);
+        new CustomGrid(m_AnchorPrefab, MapInfo.gridSize, dataList, MapInfo.noOfColoumnforAddInfo);
         m_AnchorPrefab.SetActive(false);
     }
 

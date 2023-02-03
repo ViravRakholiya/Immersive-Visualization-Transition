@@ -18,15 +18,11 @@ public class GazeInteraction : MonoBehaviour
     [SerializeField]
     private GameObject addInfoWindow;
 
-    //private LineRenderer lineRenderer;
-    private float timeToWait = 0.5f;
 
     void Start()
     {
         gameObjList = GameObject.FindGameObjectsWithTag(GridArray.cubeTag).ToList();
         HideAddInfoWindow();
-
-        // lineRenderer = aRSessionOrigin.GetComponent<LineRenderer>();
     }
 
     void Update()
@@ -36,17 +32,12 @@ public class GazeInteraction : MonoBehaviour
             gameObjList = GameObject.FindGameObjectsWithTag(GridArray.cubeTag).ToList();
         }
 
-       // Ray ray = new Ray(transform.position, transform.forward);
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit))
         {
-           // Debug.DrawRay(ray.origin, hit.point);
             GameObject gameObject = hit.collider.gameObject;
             
             if (gameObject.CompareTag("customGrid"))
             {
-              //  lineRenderer.enabled = true;
-               // lineRenderer.SetPosition(0, ray.origin);
-               // lineRenderer.SetPosition(1, hit.point);
                 HighLightCube(gameObject);
             }
         }
@@ -73,18 +64,19 @@ public class GazeInteraction : MonoBehaviour
     {
         string text = "";
         InfoData infoList = gameObj.GetComponent<InfoData>();
-        foreach (string item in infoList.infoDataDict)
+
+        if (infoList.infoDataList.Count > 0)
         {
-            text += item;
+            foreach (string item in infoList.infoDataList)
+            {
+                text += item;
+            }
+            Vector3 pos = gameObj.transform.position;
+
+            addInfoText.text = text;
+            addInfoWindow.transform.localPosition = pos;
+            addInfoWindow.gameObject.SetActive(true);
         }
-        Vector3 pos = gameObj.transform.position;
-       // pos.y += addInfoWindow.transform.localPosition.y;
-
-        addInfoText.text = text;
-       // addInfoWindow.transform.SetParent(gameObj.transform, false);
-        addInfoWindow.transform.localPosition =  pos;
-        addInfoWindow.gameObject.SetActive(true);
-
     }
 
     private void HideAddInfoWindow()

@@ -4,7 +4,13 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/IntroScenes.unity
+    guid: 26080b88c4265114593c60128b02b68c
+  - enabled: 1
+    path: Assets/Scenes/HeatMapScenes.unity
+    guid: ae3d4cb4c5b7d7f4a9ea17c9b9c8a87e
   m_configObjects:
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: 744b813df90924c169af73489b8325de,
       type: 2}

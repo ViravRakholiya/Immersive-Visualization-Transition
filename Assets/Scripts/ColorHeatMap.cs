@@ -12,7 +12,6 @@ public class ColorHeatMap
     private double maxVal;
     private List<double> fractionValueList;
 
-
     public ColorHeatMap()
     {
         initColorsBlocks();

@@ -14,8 +14,6 @@ namespace Assets.Scripts
         private List<double> valueList;
         private float gridZSize = 0.01f;
 
-        private char fieldSeperator = ',';
-
         private Material material;
         public CustomGrid(GameObject parentObject,float m_cellSize, string[] dataList,int noOfColoumnOforAddInfo)
         {
@@ -23,7 +21,7 @@ namespace Assets.Scripts
             this.dataList = dataList;
             this.noOfColoumnOforAddInfo = noOfColoumnOforAddInfo;
 
-            width = dataList[0].Split(fieldSeperator).Length; // Number of coloumn in csv file
+            width = dataList[0].Split(MapInfo.fieldSeperator).Length; // Number of coloumn in csv file
             height = dataList.Length; // Number of row in csv files
 
             GridArray.gridArrayList = new double[height, width];
@@ -40,7 +38,7 @@ namespace Assets.Scripts
 
             for (int x = 1; x < height; x++)
             {
-                string[] data = dataList[x].Split(fieldSeperator);
+                string[] data = dataList[x].Split(MapInfo.fieldSeperator);
 
                 for (int y = 1; y < width - noOfColoumnOforAddInfo; y++)
                 {
@@ -75,7 +73,7 @@ namespace Assets.Scripts
             int infoDataIndex = width - noOfColoumnOforAddInfo;
             for (int x = 0; x < height; x++)
             {
-                string[] data = dataList[x].Split(fieldSeperator);
+                string[] data = dataList[x].Split(MapInfo.fieldSeperator);
                 List<string> infoValueList = new List<string>();
 
                 for (int y = 0; y < width; y++)
@@ -102,7 +100,6 @@ namespace Assets.Scripts
                     {
                         if(y >= infoDataIndex)
                         {
-                            //dataDict.Add(data[y], "");
                             if (data[y].Contains("\r"))
                             {
                                 data[y] = data[y].Replace("\r", string.Empty);
@@ -173,10 +170,10 @@ namespace Assets.Scripts
             }
         }
 
-        private void AddInfoDataWithObject(GameObject infoParent, List<string> dataDict)
+        private void AddInfoDataWithObject(GameObject infoParent, List<string> list)
         {
             InfoData infoDataObj = infoParent.AddComponent<InfoData>();
-           infoDataObj.infoDataDict = dataDict;
+           infoDataObj.infoDataList = list;
         }
 
 
@@ -266,7 +263,6 @@ namespace Assets.Scripts
             transform.localRotation = localRotation;
             transform.localScale = textScale;
             TextMeshPro textMesh = gameObject.GetComponent<TextMeshPro>();
-           // gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(GridArray.cellSize, GridArray.cellSize);
             textMesh.alignment = textAlignment;
             textMesh.text = text;
             textMesh.autoSizeTextContainer = true;
@@ -276,8 +272,6 @@ namespace Assets.Scripts
             textMesh.fontSize = fontSize;
             textMesh.color = fontColor;
             textMesh.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;
-
-            
 
             return textMesh;
         }

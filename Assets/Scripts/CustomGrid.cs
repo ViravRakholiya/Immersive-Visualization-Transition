@@ -9,7 +9,7 @@ namespace Assets.Scripts
     {
         private int width;
         private int height;
-        private int noOfColoumnOfAddInfo;
+        private int noOfColoumnOforAddInfo;
         string[] dataList;
         private List<double> valueList;
         private float gridZSize = 0.01f;
@@ -17,11 +17,11 @@ namespace Assets.Scripts
         private char fieldSeperator = ',';
 
         private Material material;
-        public CustomGrid(GameObject parentObject,float m_cellSize, string[] dataList,int noOfColoumnOfAddInfo)
+        public CustomGrid(GameObject parentObject,float m_cellSize, string[] dataList,int noOfColoumnOforAddInfo)
         {
             GridArray.cellSize = m_cellSize;
             this.dataList = dataList;
-            this.noOfColoumnOfAddInfo = noOfColoumnOfAddInfo;
+            this.noOfColoumnOforAddInfo = noOfColoumnOforAddInfo;
 
             width = dataList[0].Split(fieldSeperator).Length; // Number of coloumn in csv file
             height = dataList.Length; // Number of row in csv files
@@ -42,7 +42,7 @@ namespace Assets.Scripts
             {
                 string[] data = dataList[x].Split(fieldSeperator);
 
-                for (int y = 1; y < width - noOfColoumnOfAddInfo; y++)
+                for (int y = 1; y < width - noOfColoumnOforAddInfo; y++)
                 {
                     if (x != 0 && y != 0)
                     {
@@ -71,12 +71,14 @@ namespace Assets.Scripts
             GetValueList();
 
             ColorHeatMap colorHeatMap = new ColorHeatMap(valueList.Min(), valueList.Max(),8);
-
+            List<string> infoHeaderList = new List<string>();
+            int infoDataIndex = width - noOfColoumnOforAddInfo;
             for (int x = 0; x < height; x++)
             {
                 string[] data = dataList[x].Split(fieldSeperator);
+                List<string> infoValueList = new List<string>();
 
-                for(int y = 0; y < width- noOfColoumnOfAddInfo; y++)
+                for (int y = 0; y < width; y++)
                 {
                     // Removing Header
                     if (x == 0 && y == 0)
@@ -84,65 +86,97 @@ namespace Assets.Scripts
                         continue;
                     }
 
-                    GameObject cubeParentObject = new GameObject("Parent" + x + y);
-                    cubeParentObject.transform.SetParent(parentObject.transform, false);
+                    GameObject cubeParentObject = null;
+                    GameObject cubeObject = null;
+                    if (y < infoDataIndex)
+                    {
+                        cubeParentObject = new GameObject("Parent" + x + y);
+                        cubeParentObject.transform.SetParent(parentObject.transform, false);
 
-                    GameObject cubeObject = new GameObject("Child" + x + y);
-                    cubeObject.transform.SetParent(cubeParentObject.transform, false);
-
+                        cubeObject = new GameObject("Child" + x + y);
+                        cubeObject.transform.SetParent(cubeParentObject.transform, false);
+                    }
                     Vector3 textPos = new Vector3(0f, 0f, -0.515f);
 
                     if (x == 0 && y != 0)
                     {
-                        Vector3 tectPosLabel = textPos;
-                        tectPosLabel.x = -1.7f;
-                        CreateCubeWithText(data[y], new Color(1f, 1f, 1f, 0f), Color.white, cubeObject.transform, GetWorldPosition(x, y), tectPosLabel, new Vector3(GridArray.cellSize, GridArray.cellSize, gridZSize), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 0f), true, 20, TextAnchor.MiddleRight, TextAlignmentOptions.Right);
+                        if(y >= infoDataIndex)
+                        {
+                            //dataDict.Add(data[y], "");
+                            if (data[y].Contains("\r"))
+                            {
+                                data[y] = data[y].Replace("\r", string.Empty);
+                            }
+                            infoHeaderList.Add(data[y]);
+                        }
+                        else
+                        {
+                            Vector3 tectPosLabel = textPos;
+                            tectPosLabel.x = -1.2f;
+                            CreateCubeWithText(data[y], new Color(1f, 1f, 1f, 0f), Color.white, cubeObject.transform, GetWorldPosition(x, y), tectPosLabel, new Vector3(GridArray.cellSize, GridArray.cellSize, gridZSize), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 0f), true, 20, TextAnchor.MiddleRight, TextAlignmentOptions.Right);
+                        }
                     }
                     else if (x != 0 && y != 0)
                     {
-                        var intVal = 0;
-                        double value = 0f;
-                        string fData = data[y];
+                        if (y < infoDataIndex){
+                            var intVal = 0;
+                            double value = 0f;
+                            string fData = data[y];
 
-                        if (int.TryParse(fData, out intVal))
-                        {
-                            value = intVal;
-                        }
-                        if (!double.TryParse(fData, out value))
-                        {
-                            value = 0f;
-                        }
-
-                        //cubeParentObject.tag = "customGrid";
-                       // cubeParentObject.AddComponent(typeof(HeatMapBehavior));
-                        cubeParentObject.AddComponent(typeof(BoxCollider));
-
-                        Vector3 worldPosition = GetWorldPosition(x, y);
-                        SetValue(worldPosition, value);
-                        string displayvalue = value.ToString();
-                        if (displayvalue.Contains("."))
-                        {
-                            int length = displayvalue.Substring(displayvalue.IndexOf(".")).Length;
-                            if (length > 2)
+                            if (int.TryParse(fData, out intVal))
                             {
-                                displayvalue = value.ToString("0.00");
+                                value = intVal;
                             }
-                        }
-                        
-                        Color cubeColor = colorHeatMap.GetColorForValue(value, valueList.Min(), valueList.Max());
-                        CreateCubeWithText(displayvalue, cubeColor, Color.black, cubeObject.transform, worldPosition, textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, gridZSize), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 00f),false, 20, TextAnchor.MiddleCenter, TextAlignmentOptions.Center);
+                            if (!double.TryParse(fData, out value))
+                            {
+                                value = 0f;
+                            }
 
-                      //  HeatMapBehavior heatMapBehaviorObj = cubeParentObject.GetComponent<HeatMapBehavior>();
-                       // heatMapBehaviorObj.particularCubeTransform = cubeObject.transform;
+                            Vector3 worldPosition = GetWorldPosition(x, y);
+                            SetValue(worldPosition, value);
+                            string displayvalue = value.ToString();
+                            if (displayvalue.Contains("."))
+                            {
+                                int length = displayvalue.Substring(displayvalue.IndexOf(".")).Length;
+                                if (length > 2)
+                                {
+                                    displayvalue = value.ToString("0.00");
+                                }
+                            }
+
+                            Color cubeColor = colorHeatMap.GetColorForValue(value, valueList.Min(), valueList.Max());
+                            GameObject infoParent = CreateCubeWithText(displayvalue, cubeColor, Color.black, cubeObject.transform, worldPosition, textPos, new Vector3(GridArray.cellSize, GridArray.cellSize, gridZSize), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 00f), false, 20, TextAnchor.MiddleCenter, TextAlignmentOptions.Center);
+
+                            if (infoValueList.Count == 0 && infoHeaderList.Count != 0)
+                            {
+                                for (int i = 0; i < noOfColoumnOforAddInfo; i++)
+                                {
+                                    string text = infoHeaderList[i] + " : " + data[i + infoDataIndex] + System.Environment.NewLine;
+                                    infoValueList.Add(text);
+                                }
+                            }
+
+                            AddInfoDataWithObject(infoParent, infoValueList);
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                     else
                     {
                         Vector3 tectPosLabel = textPos;
-                        tectPosLabel.y = -1.7f;
+                        tectPosLabel.y = -1.2f;
                        CreateCubeWithText(data[y], new Color(1f,1f,1f,0f), Color.white, cubeObject.transform, GetWorldPosition(x, y), tectPosLabel, new Vector3(GridArray.cellSize, GridArray.cellSize, gridZSize), new Vector3(0.2f, 0.2f, 1f), Quaternion.Euler(0f, 0f, 90f), true,20, TextAnchor.MiddleLeft, TextAlignmentOptions.Right);
                     }
                 }
             }
+        }
+
+        private void AddInfoDataWithObject(GameObject infoParent, List<string> dataDict)
+        {
+            InfoData infoDataObj = infoParent.AddComponent<InfoData>();
+           infoDataObj.infoDataDict = dataDict;
         }
 
 
@@ -198,7 +232,6 @@ namespace Assets.Scripts
         {
             GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
             gameObject.name = "Cube"+text;
-            gameObject.tag = GridArray.cubeTag;
             Transform transform = gameObject.transform;
             transform.SetParent(parent, false);
             cubePosition.z = CubeScale.z / 2;
@@ -213,7 +246,11 @@ namespace Assets.Scripts
             {
                 gameObject.GetComponent<MeshRenderer>().enabled = false;
             }
-            
+            else
+            {
+                gameObject.tag = GridArray.cubeTag;
+            }
+
             CreateWorldText(text, fontColor, gameObject.transform, textPosition, textRotation, textScale, isOnlyText, fontSize, textAnchor, textAlignment);
 
             return gameObject;
@@ -239,6 +276,8 @@ namespace Assets.Scripts
             textMesh.fontSize = fontSize;
             textMesh.color = fontColor;
             textMesh.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;
+
+            
 
             return textMesh;
         }

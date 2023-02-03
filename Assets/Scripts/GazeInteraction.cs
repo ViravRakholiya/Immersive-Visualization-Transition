@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
+using TMPro;
+using System.Collections;
 
 public class GazeInteraction : MonoBehaviour
 {
@@ -11,12 +13,20 @@ public class GazeInteraction : MonoBehaviour
     [SerializeField]
     private ARSessionOrigin aRSessionOrigin;
 
-    private LineRenderer lineRenderer;
+    [SerializeField]
+    private TextMeshPro addInfoText;
+    [SerializeField]
+    private GameObject addInfoWindow;
+
+    //private LineRenderer lineRenderer;
+    private float timeToWait = 0.5f;
 
     void Start()
     {
         gameObjList = GameObject.FindGameObjectsWithTag(GridArray.cubeTag).ToList();
-        lineRenderer = aRSessionOrigin.GetComponent<LineRenderer>();
+        HideAddInfoWindow();
+
+        // lineRenderer = aRSessionOrigin.GetComponent<LineRenderer>();
     }
 
     void Update()
@@ -26,22 +36,23 @@ public class GazeInteraction : MonoBehaviour
             gameObjList = GameObject.FindGameObjectsWithTag(GridArray.cubeTag).ToList();
         }
 
-        Ray ray = new Ray(transform.position, transform.forward);
-        if (Physics.Raycast(ray,out RaycastHit hit,20f))
+       // Ray ray = new Ray(transform.position, transform.forward);
+        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit))
         {
-            Debug.DrawRay(ray.origin, hit.point);
+           // Debug.DrawRay(ray.origin, hit.point);
             GameObject gameObject = hit.collider.gameObject;
             
             if (gameObject.CompareTag("customGrid"))
             {
-                lineRenderer.enabled = true;
-                lineRenderer.SetPosition(0, ray.origin);
-                lineRenderer.SetPosition(1, hit.point);
+              //  lineRenderer.enabled = true;
+               // lineRenderer.SetPosition(0, ray.origin);
+               // lineRenderer.SetPosition(1, hit.point);
                 HighLightCube(gameObject);
             }
         }
         else
         {
+            HideAddInfoWindow();
             UnHeighLightAll();
         }
     }
@@ -58,6 +69,30 @@ public class GazeInteraction : MonoBehaviour
         }
     }
 
+    private void ShowAddInfoWindow(GameObject gameObj)
+    {
+        string text = "";
+        InfoData infoList = gameObj.GetComponent<InfoData>();
+        foreach (string item in infoList.infoDataDict)
+        {
+            text += item;
+        }
+        Vector3 pos = gameObj.transform.position;
+       // pos.y += addInfoWindow.transform.localPosition.y;
+
+        addInfoText.text = text;
+       // addInfoWindow.transform.SetParent(gameObj.transform, false);
+        addInfoWindow.transform.localPosition =  pos;
+        addInfoWindow.gameObject.SetActive(true);
+
+    }
+
+    private void HideAddInfoWindow()
+    {
+        addInfoText.text = default;
+        addInfoWindow.gameObject.SetActive(false);
+    }
+
     void HighLightCube(GameObject desiredHeatmap)
     {
         foreach (GameObject gameObj in gameObjList)
@@ -71,6 +106,8 @@ public class GazeInteraction : MonoBehaviour
                 {
                     visitedGrid.Add(gameObj, originalColor);
                 }
+
+                ShowAddInfoWindow(gameObj);
             }
             else
             {

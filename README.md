@@ -17,5 +17,6 @@ To use the AR app, follow these steps:
 > Note: App will display addtional information as you you interact with the cell.
 
 # Demo Images:
-![Intro Scene](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
-![Heatmap View](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
+| <img src="Images/Intro.jpg" alt="Intro Scene" width="150" height="280"> | <img src="Images/heatmap.jpg" alt="Heatmap View" width="150" height="280"> | 
+|:--:| :--:| 
+| *Intro Scene* |*Heatmap View* |
